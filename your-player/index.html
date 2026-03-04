@@ -1,0 +1,171 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover" />
+  <title>Dual Screen Narrative</title>
+
+  <style>
+    html, body {
+      margin: 0;
+      height: 100%;
+      background: #000;
+      overflow: hidden;
+      font-family: system-ui, -apple-system, Segoe UI, Roboto, "PingFang SC", "Microsoft YaHei", sans-serif;
+    }
+
+    /* 全屏视频 */
+    #video {
+      position: fixed;
+      inset: 0;
+      width: 100vw;
+      height: 100vh;
+      object-fit: cover;
+      background: #000;
+    }
+
+    /* 中央覆盖层：用于 Click to start（叠在第一幕画面中间） */
+    #startHint {
+      position: fixed;
+      inset: 0;
+      display: grid;
+      place-items: center;
+      z-index: 10;
+      cursor: pointer;
+      user-select: none;
+      text-align: center;
+      padding: 24px;
+      box-sizing: border-box;
+      background: rgba(255, 255, 255, 0); /* 不要黑遮罩：直接叠在视频上 */
+    }
+
+    .hintBox {
+      display: inline-block;
+      padding: 14px 18px;
+      border-radius: 14px;
+      border: 2px solid rgba(255,255,255,0.85);
+      background: rgba(0,0,0,0.35);
+      backdrop-filter: blur(6px);
+    }
+    .hintTitle {
+      color: rgba(255,255,255,0.95);
+      font-weight: 800;
+      font-size: 20px;
+      letter-spacing: 0.4px;
+      line-height: 1.2;
+    }
+    .hintSub {
+      margin-top: 6px;
+      color: rgba(255,255,255,0.9);
+      font-weight: 700;
+      font-size: 14px;
+      line-height: 1.2;
+      opacity: 0.95;
+    }
+
+    /* 选项居中层（全屏居中，不在下角） */
+    #choiceOverlay {
+      position: fixed;
+      inset: 0;
+      z-index: 9;
+      display: none;            /* 需要时再显示 */
+      place-items: center;
+      pointer-events: none;     /* 默认不吃点击，内部再开 */
+    }
+
+    #choicePanel {
+      width: min(900px, 92vw);
+      pointer-events: auto;
+      text-align: center;
+      padding: 18px 18px 16px;
+      border-radius: 18px;
+    
+     
+    }
+
+    #question {
+      color: rgba(255,255,255,0.96);
+      font-weight: 900;
+      font-size: 18px;
+      line-height: 1.25;
+      text-shadow: 0 2px 10px rgba(0,0,0,0.45);
+      margin-bottom: 12px;
+    }
+
+    #options {
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+      align-items: center;
+    }
+
+    button.option {
+      width: min(720px, 88vw);
+      background: rgba(0,0,0,0.35);
+      color: rgba(255,255,255,0.96);
+      border: 2px solid rgba(255,255,255,0.85); /* 白色描边 */
+      padding: 12px 14px;
+      border-radius: 14px;
+      font-size: 16px;
+      font-weight: 900;         /* 加粗 */
+      cursor: pointer;
+      text-align: center;
+      backdrop-filter: blur(6px);
+      line-height: 1.25;
+      text-shadow: 0 2px 10px rgba(0,0,0,0.45);
+    }
+    button.option:hover { background: rgba(0,0,0,0.45); }
+    button.option:active { transform: translateY(1px); }
+
+    /* 小字提示（可选） */
+    #microHint {
+      margin-top: 10px;
+      color: rgba(255,255,255,0.85);
+      font-size: 12px;
+      font-weight: 700;
+      opacity: 0.95;
+    }
+
+    /* 调试（默认关） */
+    #debug {
+      position: fixed;
+      top: 10px;
+      left: 10px;
+      z-index: 20;
+      color: rgba(255,255,255,0.7);
+      font-size: 12px;
+      font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", monospace;
+      background: rgba(0,0,0,0.35);
+      padding: 6px 8px;
+      border-radius: 8px;
+      display: none; /* 想看改成 block */
+    }
+  </style>
+</head>
+
+<body>
+  <!-- muted + playsinline：更稳；先 load 第一幕以显示画面，但不 play -->
+  <video id="video" playsinline preload="auto"></video>
+
+  <!-- 第一幕中央 Click to start（中英双语） -->
+  <div id="startHint" role="button" aria-label="Click to start">
+    <div class="hintBox">
+      <div class="hintTitle">点击开始</div>
+      <div class="hintSub">Click to start</div>
+    </div>
+  </div>
+
+  <!-- 选项居中层 -->
+  <div id="choiceOverlay">
+    <div id="choicePanel">
+      <div id="question"></div>
+      <div id="options"></div>
+      <div id="microHint">点击选项 / Click an option</div>
+    </div>
+  </div>
+
+  <div id="debug"></div>
+
+  <script src="./game.js"></script>
+</body>
+</html>
